@@ -19,83 +19,178 @@ To write a program to predict the profit of a city using the linear regression m
 Program to implement the linear regression using gradient descent.
 Developed by: A.Abinesh
 RegisterNumber:  25017255
-import numpy as np
-from sklearn.preprocessing import StandardScaler
 
-# Linear Regression using Gradient Descent
-def linear_regression(X1, y, learning_rate=0.1, num_iters=1000):
-    X = np.c_[np.ones(len(X1)), X1]  # Add intercept term
-    theta = np.zeros(X.shape[1]).reshape(-1, 1)
-    
-    for _ in range(num_iters):
-        predictions = X.dot(theta).reshape(-1, 1)
-        errors = (predictions - y).reshape(-1, 1)
-        theta -= learning_rate * (1 / len(X1)) * X.T.dot(errors)  # Gradient descent update
-    
-    return theta
 
-# Sample data (similar to 50_Startups dataset)
-# Columns: R&D Spend, Administration, Marketing Spend
-X = np.array([
-    [165349.2, 136897.8, 471784.1],
-    [162597.7, 151377.6, 443898.5],
-    [153441.5, 101145.5, 407934.5],
-    [144372.4, 118671.9, 383199.6],
-    [142107.3, 91391.77, 366168.4],
-    [131876.9, 99814.71, 362861.4],
-    [134615.5, 147198.9, 127716.8],
-    [130298.1, 145530.1, 323876.7],
-    [120542.5, 148718.9, 311613.3],
-    [123334.9, 108679.2, 304981.6]
-], dtype=float)
+import numpy as np 
+import pandas as pd 
+from sklearn.preprocessing import StandardScaler 
 
-# Target variable: Profit
-y = np.array([
-    192261.83,
-    191792.06,
-    191050.39,
-    182901.99,
-    166187.94,
-    156991.12,
-    156122.51,
-    155752.6,
-    152211.77,
-    149759.96
-]).reshape(-1, 1)
+def linear_regression(X1, y, learning_rate=0.1, num_iters=1000): 
+    X = np.c_[np.ones(len(X1)), X1] 
+    theta = np.zeros(X.shape[1]).reshape(-1,1) 
+    for _ in range(num_iters): 
+        predictions = (X).dot(theta).reshape(-1,1) 
+        errors = (predictions - y).reshape(-1,1) 
+        theta -= learning_rate * (1/len(X1)) * X.T.dot(errors) 
+        # This is the gradient descent update rule for linear regression: 
+        # θ := θ − α ⋅ 1/m ⋅ X^T ⋅ (hθ(X) − y) 
+        # Where: 
+        # ● θ = model parameters 
+        # ● α = learning rate 
+        # ● m = number of training examples 
+        # ● X^T = transpose of feature matrix 
+        # ● hθ(X) = predictions 
+        # ● y = actual labels 
+        # ● hθ(X) − y = error vector 
+    return theta 
 
-# Scaling features and target
-scaler_X = StandardScaler()
-scaler_y = StandardScaler()
+data = pd.read_csv("50_Startups.csv") 
+print(data.head()) 
+print("\n") 
 
-X_scaled = scaler_X.fit_transform(X)
-y_scaled = scaler_y.fit_transform(y)
+X = (data.iloc[1:, :-2].values) 
+X1 = X.astype(float) 
+scaler = StandardScaler() 
+y = (data.iloc[1:, -1].values).reshape(-1,1) 
 
-# Train Linear Regression model
-theta = linear_regression(X_scaled, y_scaled, learning_rate=0.1, num_iters=10000)
+X1_Scaled = scaler.fit_transform(X1) 
+Y1_Scaled = scaler.fit_transform(y) 
 
-print("Learned parameters (theta):")
-print(theta)
+print(X) 
+print("\n") 
+print(X1_Scaled) 
+print("\n") 
 
-# Predicting for a new data point
-new_data = np.array([165349.2, 136897.8, 471784.1]).reshape(1, -1)
-new_scaled = scaler_X.transform(new_data)  # scale new input
-prediction_scaled = np.dot(np.c_[1, new_scaled], theta)  # add intercept
-prediction = scaler_y.inverse_transform(prediction_scaled)  # inverse scale to get original value
+theta = linear_regression(X1_Scaled, Y1_Scaled) 
 
-print(f"Predicted profit for {new_data.flatten()}: {prediction.flatten()[0]:.2f}")
+new_data = np.array([165349.2, 136897.8, 471784.1]).reshape(-1, 1) 
+new_Scaled = scaler.fit_transform(new_data) 
 
+prediction = np.dot(np.append(1, new_Scaled), theta) 
+prediction = prediction.reshape(-1,1) 
+pre = scaler.inverse_transform(prediction) 
+
+print(prediction) 
+print(f"Predicted value: {pre}") 
 
 
 ```
 
 ## Output:
 ```
-Learned parameters (theta):
-[[-6.66133815e-18]
- [ 8.42189317e-01]
- [-5.77735216e-03]
- [ 1.63704478e-01]]
-Predicted profit for [165349.2 136897.8 471784.1]: 196813.34
+  R&D Spend  Administration  Marketing Spend       State     Profit
+0  165349.20       136897.80        471784.10    New York  192261.83
+1  162597.70       151377.59        443898.53  California  191792.06
+2  153441.51       101145.55        407934.54     Florida  191050.39
+3  144372.41       118671.85        383199.62    New York  182901.99
+4  142107.34        91391.77        366168.42     Florida  166187.94
+
+
+[[162597.7  151377.59 443898.53]
+ [153441.51 101145.55 407934.54]
+ [144372.41 118671.85 383199.62]
+ [142107.34  91391.77 366168.42]
+ [131876.9   99814.71 362861.36]
+ [134615.46 147198.87 127716.82]
+ [130298.13 145530.06 323876.68]
+ [120542.52 148718.95 311613.29]
+ [123334.88 108679.17 304981.62]
+ [101913.08 110594.11 229160.95]
+ [100671.96  91790.61 249744.55]
+ [ 93863.75 127320.38 249839.44]
+ [ 91992.39 135495.07 252664.93]
+ [119943.24 156547.42 256512.92]
+ [114523.61 122616.84 261776.23]
+ [ 78013.11 121597.55 264346.06]
+ [ 94657.16 145077.58 282574.31]
+ [ 91749.16 114175.79 294919.57]
+ [ 86419.7  153514.11      0.  ]
+ [ 76253.86 113867.3  298664.47]
+ [ 78389.47 153773.43 299737.29]
+ [ 73994.56 122782.75 303319.26]
+ [ 67532.53 105751.03 304768.73]
+ [ 77044.01  99281.34 140574.81]
+ [ 64664.71 139553.16 137962.62]
+ [ 75328.87 144135.98 134050.07]
+ [ 72107.6  127864.55 353183.81]
+ [ 66051.52 182645.56 118148.2 ]
+ [ 65605.48 153032.06 107138.38]
+ [ 61994.48 115641.28  91131.24]
+ [ 61136.38 152701.92  88218.23]
+ [ 63408.86 129219.61  46085.25]
+ [ 55493.95 103057.49 214634.81]
+ [ 46426.07 157693.92 210797.67]
+ [ 46014.02  85047.44 205517.64]
+ [ 28663.76 127056.21 201126.82]
+ [ 44069.95  51283.14 197029.42]
+ [ 20229.59  65947.93 185265.1 ]
+ [ 38558.51  82982.09 174999.3 ]
+ [ 28754.33 118546.05 172795.67]
+ [ 27892.92  84710.77 164470.71]
+ [ 23640.93  96189.63 148001.11]
+ [ 15505.73 127382.3   35534.17]
+ [ 22177.74 154806.14  28334.72]
+ [  1000.23 124153.04   1903.93]
+ [  1315.46 115816.21 297114.46]
+ [     0.   135426.92      0.  ]
+ [   542.05  51743.15      0.  ]
+ [     0.   116983.8   45173.06]]
+
+
+[[ 2.06444689e+00  1.08674530e+00  2.04710611e+00]
+ [ 1.85614613e+00 -7.11896632e-01  1.73802284e+00]
+ [ 1.64982664e+00 -8.43382418e-02  1.52544492e+00]
+ [ 1.59829693e+00 -1.06114699e+00  1.37907465e+00]
+ [ 1.36555729e+00 -7.59549576e-01  1.35065297e+00]
+ [ 1.42785876e+00  9.37119267e-01 -6.70236359e-01]
+ [ 1.32964071e+00  8.77364743e-01  1.01560916e+00]
+ [ 1.10770332e+00  9.91548265e-01  9.10214603e-01]
+ [ 1.17122873e+00 -4.42142808e-01  8.53220419e-01]
+ [ 6.83888775e-01 -3.73575189e-01  2.01599152e-01]
+ [ 6.55653643e-01 -1.04686585e+00  3.78499613e-01]
+ [ 5.00768772e-01  2.25336793e-01  3.79315121e-01]
+ [ 4.58195856e-01  5.18045196e-01  4.03598069e-01]
+ [ 1.09406987e+00  1.27185968e+00  4.36668630e-01]
+ [ 9.70774801e-01  5.69187019e-02  4.81902796e-01]
+ [ 1.40171151e-01  2.04213242e-02  5.03988539e-01]
+ [ 5.18818627e-01  8.61162942e-01  6.60646550e-01]
+ [ 4.52662441e-01 -2.45327166e-01  7.66744716e-01]
+ [ 3.31418719e-01  1.16324696e+00 -1.76786575e+00]
+ [ 1.00148706e-01 -2.56373164e-01  7.98929296e-01]
+ [ 1.48733235e-01  1.17253235e+00  8.08149372e-01]
+ [ 4.87502635e-02  6.28593860e-02  8.38933693e-01]
+ [-9.82591094e-02 -5.46989742e-01  8.51390791e-01]
+ [ 1.18124397e-01 -7.78647778e-01 -5.59731668e-01]
+ [-1.63501211e-01  6.63351874e-01 -5.82181464e-01]
+ [ 7.91054423e-02  8.27447384e-01 -6.15806869e-01]
+ [ 5.82245190e-03  2.44821707e-01  1.26748176e+00]
+ [-1.31951672e-01  2.20634710e+00 -7.52471405e-01]
+ [-1.42098957e-01  1.14598636e+00 -8.47092475e-01]
+ [-2.24248196e-01 -1.92852853e-01 -9.84661727e-01]
+ [-2.43769731e-01  1.13416515e+00 -1.00969684e+00]
+ [-1.92071447e-01  2.93341889e-01 -1.37179791e+00]
+ [-3.72133433e-01 -6.43436432e-01  7.67579736e-02]
+ [-5.78425164e-01  1.31291203e+00  4.37806597e-02]
+ [-5.87799186e-01 -1.28831630e+00 -1.59720149e-03]
+ [-9.82512742e-01  2.15877746e-01 -3.93329758e-02]
+ [-6.32026234e-01 -2.49730335e+00 -7.45470274e-02]
+ [-1.17438775e+00 -1.97220609e+00 -1.75652453e-01]
+ [-7.57409950e-01 -1.36226960e+00 -2.63879233e-01]
+ [-9.80452300e-01 -8.88427205e-02 -2.82817765e-01]
+ [-1.00004914e+00 -1.30037133e+00 -3.54364495e-01]
+ [-1.09678072e+00 -8.89351609e-01 -4.95908241e-01]
+ [-1.28185424e+00  2.27553942e-01 -1.46247646e+00]
+ [-1.13006788e+00  1.20951025e+00 -1.52435028e+00]
+ [-1.61185030e+00  1.11924904e-01 -1.75150292e+00]
+ [-1.60467891e+00 -1.86589193e-01  7.85608134e-01]
+ [-1.63460525e+00  5.15604972e-01 -1.76786575e+00]
+ [-1.62227377e+00 -2.48083192e+00 -1.76786575e+00]
+ [-1.63460525e+00 -1.44781686e-01 -1.37963750e+00]]
+
+
+[[-0.42925552]]
+Predicted value: [[192932.45813544]]
+
 ```
 
 
